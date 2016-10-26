@@ -4,24 +4,20 @@ var returnBadges, badgerService;
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 
-function getBadges(request, response) {
-  var orcid = request.params.orcid;
-  if (!orcid) {
+function getBadgeByUser(request, response) {
+  if (!request.params.orcid) {
     response.status(400).end();
     return;
   }
-  returnBadges(badgerService.getBadges(orcid), request, response);
+  return badgerService.getBadges(request.params.orcid);
+}
+
+function getBadges(request, response) {
+  returnBadges(getBadgeByUser(request, response), request, response);
 }
 
 function getBadgeCount(request, response) {
-  var orcid = request.params.orcid;
-  if (!orcid) {
-    response.status(400).end();
-    return;
-  }
-
-  var getTheBadges = badgerService.getBadges(orcid);
-  getTheBadges(function (error, badges) {
+  getBadgeByUser(request, response)(function (error, badges) {
     if (error !== null || !badges) {
       response.json(0);
     } else {
@@ -30,14 +26,26 @@ function getBadgeCount(request, response) {
   });
 }
 
-function getBadgesByType(request, response) {
-  // get all badge instances for the user. Is there a more efficient way to do this?
-  var orcid = request.params.orcid;
-  if (!orcid) {
+function getBadgesByType(request, response){
+  if (!request.params.orcid || !request.params.badge) {
     response.status(400).end();
     return;
   }
-  returnBadges(badgerService.getBadges(orcid, request.params.badge), request, response);
+  return badgerService.getBadges(request.params.orcid, request.params.badge);
+}
+
+function getBadgesByBadge(request, response) {
+  returnBadges(getBadgesByType(request, response), request, response);
+}
+
+function getBadgesByBadgeCount(request, response) {
+  getBadgesByType(request, response)(function (error, badges) {
+    if (error !== null || !badges) {
+      response.json(0);
+    } else {
+      response.json(badges.length);
+    }
+  });
 }
 
 function getUser(request, response) {
@@ -64,8 +72,9 @@ module.exports = function (rb, bs) {
   badgerService = bs;
   return {
     getBadges: getBadges,
-    getBadgesByType: getBadgesByType,
     getBadgeCount: getBadgeCount,
+    getBadgesByBadge: getBadgesByBadge,
+    getBadgesByBadgeCount: getBadgesByBadgeCount,
     getUser: getUser
   };
 };

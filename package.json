@@ -14,9 +14,9 @@
     "lint": "npm run eslint && npm run eslint:test",
     "build:production": "npm run build:js -- --optimize-minimize --optimize-dedupe",
     "start:production": "npm-run-all build:production server",
-    "test:integration": "mocha test/integration",
+    "test:integration": "mocha -t 4000 test/integration",
     "test:unit": "mocha test/unit",
-    "test": "mocha test/*"
+    "test": "mocha -t 4000 test/*"
   },
   "dependencies": {
     "babel-loader": "^5.0.0",
@@ -25,11 +25,11 @@
     "connect-redis": "^3.0.1",
     "es5-shim": "^4.1.1",
     "exports-loader": "^0.6.2",
-    "express": "~4.9.x",
+    "express": "~4.13.x",
     "express-session": "~1.11.2",
     "habitat": "^3.1.2",
     "imports-loader": "^0.6.4",
-    "jade": "^1.10.0",
+    "pug": "^2.0.0-alpha8",
     "jsx-loader": "^0.13.2",
     "mofo-style": "^2.3.0",
     "mongoose": "^4.1.4",
@@ -42,7 +42,8 @@
     "shortid": "^2.2.2",
     "simple-oauth2": "0.5.1",
     "webpack": "^1.8.11",
-    "whatwg-fetch": "^0.9.0"
+    "whatwg-fetch": "^0.9.0",
+    "validator": "^5.2.0"
   },
   "devDependencies": {
     "eslint": "^2.3.0",
@@ -51,7 +52,7 @@
     "supertest": "^1.0.1"
   },
   "engines": {
-    "node": "0.12.2"
+    "node": "4.4.5"
   },
   "repository": {
     "type": "git",

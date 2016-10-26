@@ -8,30 +8,24 @@ var Claim = mongoose.model('Claim');
 var User = mongoose.model('User');
 var shortid = require('shortid');
 
-function getBadges(request, response) {
+function getBadgesByDoi(request, response) {
   if (!request.params.doi1 || !request.params.doi2) {
     response.status(400).end();
     return;
   }
 
-  returnBadges(badgerService.getBadges(null, null, {
-    '_1': request.params.doi1,
-    '_2': request.params.doi2
-  }), request, response);
-}
-
-function getBadgeCount(request, response) {
-  if (!request.params.doi1 || !request.params.doi2) {
-    response.status(400).end();
-    return;
-  }
-
-  var getTheBadges = badgerService.getBadges(null, null, {
+  return badgerService.getBadges(null, null, {
     '_1': request.params.doi1,
     '_2': request.params.doi2
   });
+}
 
-  getTheBadges(function (error, badges) {
+function getBadges(request, response) {
+  returnBadges(getBadgesByDoi(request, response), request, response);
+}
+
+function getBadgeCount(request, response) {
+  getBadgesByDoi(request, response)(function (error, badges) {
     if (error !== null || !badges) {
       response.json(0);
     } else {
@@ -40,28 +34,57 @@ function getBadgeCount(request, response) {
   });
 }
 
+
 function getBadgesByType(request, response) {
-  if (!request.params.doi1 || !request.params.doi2) {
+  if (!request.params.doi1 || !request.params.doi2 || !request.params.badge) {
     response.status(400).end();
     return;
   }
 
-  returnBadges(badgerService.getBadges(null, request.params.badge, {
+  return badgerService.getBadges(null, request.params.badge, {
     '_1': request.params.doi1,
     '_2': request.params.doi2
-  }), request, response);
+  });
 }
 
-function getUserBadges(request, response) {
+function getBadgesByBadge(request, response) {
+  returnBadges(getBadgesByType(request, response), request, response);
+}
+
+function getBadgesByBadgeCount(request, response) {
+  getBadgesByType(request, response)(function (error, badges) {
+    if (error !== null || !badges) {
+      response.json(0);
+    } else {
+      response.json(badges.length);
+    }
+  });
+}
+
+function getBadgesByUser(request, response) {
   if (!request.params.doi1 || !request.params.doi2 || !request.params.orcid) {
     response.status(400).end();
     return;
   }
 
-  returnBadges(badgerService.getBadges(request.params.orcid, null, {
+  return badgerService.getBadges(request.params.orcid, null, {
     '_1': request.params.doi1,
     '_2': request.params.doi2
-  }), request, response);
+  });
+}
+
+function getUserBadges(request, response) {
+  returnBadges(getBadgesByUser(request, response), request, response);
+}
+
+function getUserBadgeCount(request, response) {
+  getBadgesByUser(request, response)(function (error, badges) {
+    if (error !== null || !badges) {
+      response.json(0);
+    } else {
+      response.json(badges.length);
+    }
+  });
 }
 
 function getUserBadgesByType(request, response) {
@@ -70,10 +93,24 @@ function getUserBadgesByType(request, response) {
     return;
   }
 
-  returnBadges(badgerService.getBadges(request.params.orcid, request.params.badge, {
+  return badgerService.getBadges(request.params.orcid, request.params.badge, {
     '_1': request.params.doi1,
     '_2': request.params.doi2
-  }), request, response);
+  });
+}
+
+function getUserBadgesByBadge(request, response) {
+  returnBadges(getUserBadgesByType(request, response), request, response);
+}
+
+function getUserBadgesByBadgeCount(request, response) {
+  getUserBadgesByType(request, response)(function (error, badges) {
+    if (error !== null || !badges) {
+      response.json(0);
+    } else {
+      response.json(badges.length);
+    }
+  });
 }
 
 function createPaper(request, response) {
@@ -122,7 +159,7 @@ function createPaper(request, response) {
     var mailOptions = {
       from: 'noreply@mozillascience.org',
       to: email, // list of receivers
-      subject: 'Claim badges for your scholarly contributions!', // Subject line
+      subject: 'Claim badges for your scholarly contributions from Mozilla Science Paper Badger', // Subject line
       text: text, // plaintext body
       html: html
     };
@@ -191,10 +228,13 @@ module.exports = function (rb, bs, tr) {
   return {
     // GET
     getBadges: getBadges,
-    getBadgesByType: getBadgesByType,
-    getUserBadges: getUserBadges,
-    getUserBadgesByType: getUserBadgesByType,
     getBadgeCount: getBadgeCount,
+    getBadgesByBadge: getBadgesByBadge,
+    getBadgesByBadgeCount: getBadgesByBadgeCount,
+    getUserBadges: getUserBadges,
+    getUserBadgeCount: getUserBadgeCount,
+    getUserBadgesByBadge: getUserBadgesByBadge,
+    getUserBadgesByBadgeCount: getUserBadgesByBadgeCount,
 
     // POST
     createPaper: createPaper,

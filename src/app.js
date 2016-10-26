@@ -28,7 +28,7 @@ var app = express();
 module.exports = app;
 app.enable('trust proxy');
 
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, '..', '/public')));
 app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
@@ -51,7 +51,7 @@ function returnBadges(getBadges, request, response) {
       return response.send(error);
     }
     if (request.query.pretty) {
-      response.render(path.join(__dirname, '..', '/public/code.jade'), {
+      response.render(path.join(__dirname, '..', '/public/code.pug'), {
         data: JSON.stringify(badges, null, 2)
       });
     } else {
@@ -145,22 +145,28 @@ app.get('/orcid_auth_callback', function (request, response) {
 // Routes for badges
 var badges = require('./routes/badges')(returnBadges, badgerService);
 app.get('/badges', badges.getAll);
+app.get('/badges/count', badges.getAllCount);
 app.get('/badges/:badge', badges.getAllByType);
+app.get('/badges/:badge/count', badges.getAllByTypeCount);
 
 // Routes for user
 var users = require('./routes/users')(returnBadges, badgerService);
 app.get('/users/:orcid/badges', users.getBadges);
 app.get('/users/:orcid/badges/count', users.getBadgeCount);
-app.get('/users/:orcid/badges/:badge', users.getBadgesByType);
+app.get('/users/:orcid/badges/:badge', users.getBadgesByBadge);
+app.get('/users/:orcid/badges/:badge/count', users.getBadgesByBadgeCount);
 app.get('/user', users.getUser);
 
 // Routes for papers
 var papers = require('./routes/papers')(returnBadges, badgerService, transporter);
 app.get('/papers/:doi1/:doi2/badges', papers.getBadges);
 app.get('/papers/:doi1/:doi2/badges/count', papers.getBadgeCount);
-app.get('/papers/:doi1/:doi2/badges/:badge', papers.getBadgesByType);
+app.get('/papers/:doi1/:doi2/badges/:badge', papers.getBadgesByBadge);
+app.get('/papers/:doi1/:doi2/badges/:badge/count', papers.getBadgesByBadgeCount);
 app.get('/papers/:doi1/:doi2/users/:orcid/badges', papers.getUserBadges);
-app.get('/papers/:doi1/:doi2/users/:orcid/badges/:badge', papers.getUserBadgesByType);
+app.get('/papers/:doi1/:doi2/users/:orcid/badges/count', papers.getUserBadgeCount);
+app.get('/papers/:doi1/:doi2/users/:orcid/badges/:badge', papers.getUserBadgesByBadge);
+app.get('/papers/:doi1/:doi2/users/:orcid/badges/:badge/count', papers.getUserBadgesByBadgeCount);
 app.post('/papers/:doi1/:doi2', papers.createPaper);
 app.post('/papers/:doi1/:doi2/users/:orcid/badges/:badge?', papers.createBadges);
 
@@ -174,7 +180,7 @@ app.get('*', function (request, response) {
   if (request.session.orcid_token && request.session.orcid_token.token) {
     orcid = request.session.orcid_token.token.orcid;
   }
-  response.render(path.join(__dirname, '..', '/public/index.jade'), {
+  response.render(path.join(__dirname, '..', '/public/index.pug'), {
     orcid: orcid
   });
 });

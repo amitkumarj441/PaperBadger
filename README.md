@@ -32,40 +32,21 @@ Want to help? We love new contributors! Please review our [contributing guidelin
 
 Are you ready to contribute to Paper Badger? This section will help you set up your own development version of the Contributorship Badges prototype.
 
-Clone PaperBadger and enter the directory: `git clone https://github.com/mozillascience/PaperBadger && cd PaperBadger`
+Clone (or Fork) PaperBadger and enter the directory: `git clone https://github.com/mozillascience/PaperBadger && cd PaperBadger`
 
-#### Run using Docker
+For an overview of the [architecture](docs/high-level-architecture.md) of the system and other details, visit the [docs](docs/) section.
 
-You can use Docker to bring up a quick instance of the app to develop against. This way you dont need to have node or mongo installed on your host.
+#### Environment variables
+If you would like to override the default configuration, create an `.env` file in your favourite text editor and use _default.env_ as a template (do not delete or modify _default.env_).
 
-* Make sure you have [Docker](https://www.docker.com/) (>=1.10) and docker-compose (>=1.6) installed.
-* Setup your environment variables, or copy over the test file
-```bash
-sed 's/export //' env.test > env.docker
-```
-* start the service
-```bash
-docker-compose up
-```
-* visit the running service
-  * If on Linux host: http://localhost:5000
-  * If not Linux: http://(docker host ip):5000 (You can find your docker IP with `docker-machine ip default`)
-
-
-#### Run locally
-
-* Install PaperBadger's Node dependencies: `npm install`
-* If you would like to override the default, create `.env` file in your favourite text editor.
-
-`PORT`, `SESSION_SECRET`, `BADGES_ENDPOINT`, `BADGES_KEY`, `BADGES_SECRET`, `BADGES_SYSTEM`, `ORCID_AUTH_CLIENT_ID`, `ORCID_AUTH_CLIENT_SECRET`, `ORCID_AUTH_SITE`, `ORCID_AUTH_TOKEN_PATH` and `ORCID_REDIRECT_URI` environment variables are set to the correct values. `PORT` can be any available port.
-If you would like to develop against the hosted custom badgekit-api we have running specificaly for PaperBadger testing, your environment values should look this:
+If you would like to develop against the hosted custom badgekit-api we have running specifically for PaperBadger testing, your environment values should look this:
 
         # default port is 5000
         export PORT=5000
         export SESSION_SECRET=USE_SOMETHING_GOOD_LIKE_puUJjfE6QtUnYryb
 
         # Badges
-        export BADGES_ENDPOINT=http://badgekit-api-sciencelab.herokuapp.com/
+        export BADGES_ENDPOINT=http://badgekit-api-test-sciencelab.herokuapp.com/
         export BADGES_KEY=master
         export BADGES_SECRET=#############
         export BADGES_SYSTEM=badgekit
@@ -78,18 +59,47 @@ If you would like to develop against the hosted custom badgekit-api we have runn
         export ORCID_REDIRECT_URI=#############
 
 Ask [@acabunoc](http://github.com/acabunoc) for ones marked `###########`. Our custom BadgeKit API code can be found [here](https://github.com/acabunoc/badgekit-api).
+Feel free to change `PORT` to any available port.
 
+#### Run using Docker
+
+You can use Docker to bring up a quick instance of the app to develop against. This way you don't need to have node, MongoDB, and redis installed on your host.
+
+* Make sure you have [Docker](https://www.docker.com/) (>=1.10) and docker-compose (>=1.6) installed.
+* Setup your environment variables as explained in the previous section
+* start the service with `docker-compose up`
+* visit the running service
+  * If on Linux host: http://localhost:5000
+  * If not Linux: http://(docker_host_ip):5000 (You can find your docker IP with `docker-machine ip default`)
+
+This setup will create 3 containers:
+  - paperbadger_paperbadger_1 contains the PaperBadger code, mapped to the _/src_ volume
+  - paperbadger_mongo_1 is the MongoDB container with a DB called _test_
+  - paperbadger_redis_1 is the redis server
+
+You can connect to the main container by using `docker exec -it paperbadger_paperbadger_1 /bin/bash`. _ctrl+c_ will stop the three containers.
+
+#### Run locally
+
+* Make sure you have at least node version 4.4.5 installed. Installing node through [nvm](https://github.com/creationix/nvm) is recommended, so you don't need to use _sudo_ in the next step.
+* Install PaperBadger's Node dependencies: `npm install`
+* Make sure [MongoDB](https://www.mongodb.org/) and [redis-server](http://redis.io/download) are running and locally accessible. You can install these from their official website or use your favorite package manager.
+* Setup your environment variables as explained in a previous section
 * Run `npm start`, and open up `http://localhost:5000/` in your favourite web browser!
 
-To run the application successfully you need to have [mongodb](https://www.mongodb.org/) server and [redis-server](http://redis.io/download) running locally. You can install these from their offical website or use your favorite package manager.
 
 ### API Endpoints
 
 *   GET [/badges](http://badges.mozillascience.org/badges)
     *   Get all badges we issue
+*   GET [/badges/count](http://badges.mozillascience.org/badges/count)
+    *   Get a count of all badges we issue
 *   GET /badges/:badge
     *   Get all badge instances of a certain badge
     *   e.g. [/badges/formal_analysis](http://badges.mozillascience.org/badges/formal_analysis)
+*   GET /badges/:badge/count
+    *   Get a count of all badge instances of a certain badge
+    *   e.g. [/badges/formal_analysis/count](http://badges.mozillascience.org/badges/formal_analysis/count)
 *   GET /users/:orcid/badges
     *   Get all badge instances earned by a user
     *   e.g. [/users/0000-0001-5979-8713/badges](http://badges.mozillascience.org/users/0000-0001-5979-8713/badges)
@@ -99,6 +109,9 @@ To run the application successfully you need to have [mongodb](https://www.mongo
 *   GET /users/:orcid/badges/:badge
     *   Get all badge instances of a certain badge earned by a user
     *   e.g. [/users/0000-0001-5979-8713/badges/data_curation](http://badges.mozillascience.org/users/0000-0001-5979-8713/badges/data_curation)
+*   GET /users/:orcid/badges/:badge/count
+    *   Get a count of all badge instances of a certain badge earned by a user
+    *   e.g. [/users/0000-0001-5979-8713/badges/data_curation/count](http://badges.mozillascience.org/users/0000-0001-5979-8713/badges/data_curation/count)
 *   GET /papers/:doi1/:doi2/badges
     *   Get all badge instances for a paper.
     *   e.g. [/papers/10.1186/2047-217X-3-18/badges](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/badges)
@@ -108,12 +121,21 @@ To run the application successfully you need to have [mongodb](https://www.mongo
 *   GET /papers/:doi1/:doi2/badges/:badge
     *   Get all badge instances of a certain badge for a paper.
     *   e.g. [/papers/10.1186/2047-217X-3-18/badges/investigation](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/badges/investigation)
+*   GET /papers/:doi1/:doi2/badges/:badge/count
+    *   Get a count of all badge instances of a certain badge for a paper.
+    *   e.g. [/papers/10.1186/2047-217X-3-18/badges/investigation/count](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/badges/investigation/count)
 *   GET /papers/:doi1/:doi2/users/:orcid/badges
     *   Get all badge instances earned by a user for a paper.
     *   e.g. [/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges)
+*   GET /papers/:doi1/:doi2/users/:orcid/badges/count
+    *   Get a count of all badge instances earned by a user for a paper.
+    *   e.g. [/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges/count](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges/count)
 *   GET /papers/:doi1/:doi2/users/:orcid/badges/:badge
     *   Get all badge instances of a certain badge earned by a user for a paper.
     *   e.g. [/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges/data_curation](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges/data_curation)
+*   GET /papers/:doi1/:doi2/users/:orcid/badges/:badge/count
+    *   Get a count of all badge instances of a certain badge earned by a user for a paper.
+    *   e.g. [/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges/data_curation/count](http://badges.mozillascience.org/papers/10.1186/2047-217X-3-18/users/0000-0001-5979-8713/badges/data_curation/count)
 *   POST /papers/:doi1/:doi2/users/:orcid/badges/:badge
     *   Issue a badge
 
